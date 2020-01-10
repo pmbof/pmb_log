@@ -11,7 +11,9 @@ namespace pmb
 {
 
 
-log* log::_instance = NULL;
+const char* log::app_abnormal_panic_end = "Application ABNORMAL PANIC TERMINATION";
+
+log* log::_instance = nullptr;
 
 CCriticalSection log::_cs;
 
@@ -355,6 +357,13 @@ void log::_printType(log_type type)
 		if (_bColored)
 			*this << char(0x1B) << "[m";
 		break;
+	case logPanic:
+		if (_bColored)
+			*this << char(0x1B) << "[1;38;5;124m";
+		*this << ":P:";
+		if (_bColored)
+			*this << char(0x1B) << "[m";
+		break;
 	default:
 		break;
 	}
@@ -412,12 +421,22 @@ log& log::trace(log_type type, LPCSTR lpszFormat, ...)
 	getThreadId();
 	printType(type);
 
+	if (type == logPanic && _bColored)
+		*this << char(0x1B) << "[1;38;5;124m";
+		
 	char buffer[1024 * 16];
 	va_list argptr;
 	va_start(argptr, lpszFormat);
 	vsprintf_s(buffer, lpszFormat, argptr);
 	va_end(argptr);
 	*this << buffer;
+
+	if (type == logPanic)
+	{
+		*this << "\n" << app_abnormal_panic_end << "\n";
+		if (_bColored)
+			*this << char(0x1B) << "[m";
+	}
 	this->flush();
 
 #ifdef DEBUG
@@ -429,6 +448,9 @@ log& log::trace(log_type type, LPCSTR lpszFormat, ...)
 	}
 #endif // DEBUG
 
+	if (type == logPanic)
+		exit(100);
+	
 	_cs.Unlock();
 	return *this;
 }
@@ -488,6 +510,8 @@ log& log::trace(log_type type, int nTabs, LPCSTR lpszFormat, ...)
 	if (_bColored && (type == logWarning || type == logError))
 		*this << char(0x1B) << (type == logWarning ? "[1;31m" : "[1;38;5;124m");
 
+	if (type == logPanic && _bColored)
+		*this << char(0x1B) << "[1;38;5;124m";
 
 	char buffer[1024 * 16];
 	va_list argptr;
@@ -495,6 +519,13 @@ log& log::trace(log_type type, int nTabs, LPCSTR lpszFormat, ...)
 	vsprintf_s(buffer, lpszFormat, argptr);
 	va_end(argptr);
 	*this << buffer;
+
+	if (type == logPanic)
+	{
+		*this << "\n" << app_abnormal_panic_end << "\n";
+		if (_bColored)
+			*this << char(0x1B) << "[m";
+	}
 	this->flush();
 
 #ifdef DEBUG
@@ -505,6 +536,9 @@ log& log::trace(log_type type, int nTabs, LPCSTR lpszFormat, ...)
 		AfxTrace(CString(buffer));
 	}
 #endif // DEBUG
+
+	if (type == logPanic)
+		exit(101);
 
 	_cs.Unlock();
 	return *this;
@@ -542,7 +576,17 @@ log& log::trace(log_type type, const std::stringstream& ss)
 		printDate();
 	printType(type);
 
+	if (type == logPanic && _bColored)
+		*this << char(0x1B) << "[1;38;5;124m";
+
 	*this << ss.str();
+
+	if (type == logPanic)
+	{
+		*this << "\n" << app_abnormal_panic_end << "\n";
+		if (_bColored)
+			*this << char(0x1B) << "[m";
+	}
 
 #ifdef DEBUG
 	if (_logLevel == logWTrace)
@@ -552,6 +596,9 @@ log& log::trace(log_type type, const std::stringstream& ss)
 		AfxTrace(str);
 	}
 #endif // DEBUG
+
+	if (type == logPanic)
+		exit(100);
 
 	_cs.Unlock();
 	return *this;
@@ -572,7 +619,17 @@ log& log::trace(log_type type, const std::string& str)
 		printDate();
 	printType(type);
 
+	if (type == logPanic && _bColored)
+		*this << char(0x1B) << "[1;38;5;124m";
+
 	*this << str;
+
+	if (type == logPanic)
+	{
+		*this << "\n" << app_abnormal_panic_end << "\n";
+		if (_bColored)
+			*this << char(0x1B) << "[m";
+	}
 
 #ifdef DEBUG
 	if (_logLevel == logWTrace)
@@ -582,6 +639,9 @@ log& log::trace(log_type type, const std::string& str)
 		AfxTrace(str);
 	}
 #endif // DEBUG
+
+	if (type == logPanic)
+		exit(100);
 
 	_cs.Unlock();
 	return *this;

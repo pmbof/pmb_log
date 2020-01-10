@@ -7,7 +7,8 @@ namespace pmb
 
 enum log_type : char
 {
-	logError = '\x01',
+	logPanic = '\x01',
+	logError,
 	logWarning,
 	logInf,
 	logDebug,
@@ -33,6 +34,8 @@ public:
 
 	static int _gen_filename(const tm& now, CStringA& ofn);
 
+	static const char* app_abnormal_panic_end;
+	
 private:
 	static log* _instance;
 
