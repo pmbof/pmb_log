@@ -50,8 +50,8 @@ log* log::instance(log_type logLevel, const char* filename, bool bColored, bool 
 		{
 			_instance->_tm = now;
 			_instance->_iFnDate = r;
-			_instance->_oFilename = filename;
 		}
+		_instance->_oFilename = filename;
 	}
 	_cs.Unlock();
 	return _instance;
