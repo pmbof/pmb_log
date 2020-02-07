@@ -249,7 +249,7 @@ void log::prev_filename(CStringA& lfn) const
 	{
 		if (_iFnDate & 0x02)
 		{
-			if (--now.tm_mon < 0);
+			if (--now.tm_mon < 0)
 			{
 				now.tm_mon = 11;
 				now.tm_year;
